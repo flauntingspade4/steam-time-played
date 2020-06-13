@@ -1,0 +1,11 @@
+[package]
+name = "steam-time-played"
+version = "0.1.0"
+authors = ["flauntingspade4 <48335751+flauntingspade4@users.noreply.github.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = { version = "0.10.6", features = ["blocking", "json"] }
+serde = { version = "1.0.111", features = ["derive"] }
