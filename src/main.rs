@@ -17,20 +17,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let page: GameResponse = reqwest::blocking::get(&format!("http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={}&steamid={}&format=json", token, id))?.json()?;
+    let time = page.response.count_time() / 60.;
     println!(
-        "\nTotal time played in hours: {}",
-        page.response.count_time() / 60.
+        "\nTotal time played in hours: {}\nTotal time played in days: {}",
+        time,
+        time / 24.
     );
 
     Ok(())
 }
 #[derive(Deserialize)]
-struct User {
-    pub steamid: String,
-}
-#[derive(Deserialize)]
 struct IdResponse {
     pub response: User,
+}
+#[derive(Deserialize)]
+struct User {
+    pub steamid: String,
 }
 #[derive(Deserialize)]
 struct GameResponse {
