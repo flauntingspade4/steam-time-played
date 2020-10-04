@@ -1,6 +1,10 @@
-# steam-time-played
+# Steam Time Played
 
-A tool to find the amount of time played by players for steam
+A simple tool to find the total playtime of any user on Steam.
 
-- The player's profile must be public
-- You must have an api key from valve, found [here](https://steamcommunity.com/dev/apikey) saved in a file called '.token' in the same folder
+### Usage
+Pass the username as a command-line argument, or enter it when requested by the program if you don't.
+
+### Requirements
+- The specified player's profile must be public
+- You must have a [Steam Web API Key](https://steamcommunity.com/dev/apikey) stored in a file called `.token`.

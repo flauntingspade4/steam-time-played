@@ -1,9 +1,16 @@
 use serde::Deserialize;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let token = std::fs::read_to_string(".token")?;
-    let mut name = String::new();
-    std::io::stdin().read_line(&mut name)?;
-    name = String::from(name.trim());
+
+    let mut args: Vec<String> = std::env::args().collect();
+    if args.len() < 2 {
+      let mut input_name = String::new();
+      println!("Enter Steam username: ");
+      std::io::stdin().read_line(&mut input_name)?;
+      input_name = String::from(input_name.trim());
+      args.push(input_name);
+    }
+    let ref name: String = args[1];
     let id;
     if name.len() == 17 && only_nums(&name) {
         id = name.parse::<u128>().unwrap();
