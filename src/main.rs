@@ -1,17 +1,19 @@
 use serde::Deserialize;
-fn main() -> Result<(), std::io::Error> {
-    let token = std::fs::read_to_string(".token")?;
+fn main() {
+    let token = std::fs::read_to_string(".token")
+        .expect("You must have a file named '.token' in the same directory as this");
 
     let mut args: Vec<String> = std::env::args().collect();
+    let mut name = String::new();
+
     if args.len() < 2 {
-        let mut input_name = String::new();
         println!("Enter Steam username: ");
-        std::io::stdin().read_line(&mut input_name)?;
-        input_name = String::from(input_name.trim());
-        args.push(input_name);
+        std::io::stdin().read_line(&mut name).expect("It's possible you've just given this invalid ASCII-in this case, the steam ID should be used instead of the username");
+        name = name.trim().to_string();
+    } else {
+        name = args.remove(1);
     }
-    let name = &args[1];
-    let id = if name.len() == 17 && only_nums(&name) {
+    let id = if name.len() == 17 && name.chars().all(char::is_numeric) {
         name.parse::<u128>().unwrap()
     } else {
         let page: IdResponse = ureq::get(&format!(
@@ -39,13 +41,11 @@ fn main() -> Result<(), std::io::Error> {
 
     println!(
 		"\nTotal time played in hours: {:.2}, of which {:.2}% was played in the past two weeks ({:.2} hours)\nTotal time played in days: {:.2}\n",
-		time,
+		time / 60.,
 		(time2weeks / time) * 100.,
-		time2weeks,
-		time / 24.
+		time2weeks / 60.,
+		time / 1440.
 	);
-
-    Ok(())
 }
 #[derive(Deserialize)]
 struct IdResponse {
@@ -70,15 +70,8 @@ struct Game {
 }
 impl Games {
     fn count_time(&self) -> (f64, f64) {
-        (
-            self.games.iter().fold(0., |a, x| a + x.playtime_forever) / 60.,
-            self.games
-                .iter()
-                .fold(0., |a, x| a + x.playtime_2weeks.unwrap_or(0.))
-                / 60.,
-        )
+        self.games.iter().fold((0., 0.), |(a, p), x| {
+            (a + x.playtime_forever, p + x.playtime_2weeks.unwrap_or(0.))
+        })
     }
-}
-fn only_nums(i: &str) -> bool {
-    i.chars().all(char::is_numeric)
 }
