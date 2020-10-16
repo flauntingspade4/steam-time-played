@@ -1,5 +1,5 @@
 use serde::Deserialize;
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), std::io::Error> {
     let token = std::fs::read_to_string(".token")?;
 
     let mut args: Vec<String> = std::env::args().collect();
@@ -19,7 +19,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             token, name
         ))
         .call()
-        .into_json_deserialize()?;
+        .into_json_deserialize()
+        .expect(&format!(
+            "Failed to get user details based off given name {}",
+            name
+        ));
 
         page.response.steamid.parse::<u128>().unwrap()
     };
@@ -29,10 +33,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 		token, id
 	))
 	.call()
-	.into_json_deserialize()?;
+	.into_json_deserialize().expect(&format!("The given id {} was either incorrect, or the associated account was private", id));
 
-    let time = page.response.count_time().0;
-    let time2weeks = page.response.count_time().1;
+    let (time, time2weeks) = page.response.count_time();
 
     println!(
 		"\nTotal time played in hours: {:.2}, of which {:.2}% was played in the past two weeks ({:.2} hours)\nTotal time played in days: {:.2}\n",
@@ -69,10 +72,10 @@ impl Games {
     fn count_time(&self) -> (f64, f64) {
         (
             self.games.iter().fold(0., |a, x| a + x.playtime_forever) / 60.,
-            self.games.iter().fold(0., |a, x| match x.playtime_2weeks {
-                Some(x) => a + x,
-                None => a,
-            }) / 60.,
+            self.games
+                .iter()
+                .fold(0., |a, x| a + x.playtime_2weeks.unwrap_or(0.))
+                / 60.,
         )
     }
 }
