@@ -4,16 +4,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args: Vec<String> = std::env::args().collect();
     if args.len() < 2 {
-      let mut input_name = String::new();
-      println!("Enter Steam username: ");
-      std::io::stdin().read_line(&mut input_name)?;
-      input_name = String::from(input_name.trim());
-      args.push(input_name);
+        let mut input_name = String::new();
+        println!("Enter Steam username: ");
+        std::io::stdin().read_line(&mut input_name)?;
+        input_name = String::from(input_name.trim());
+        args.push(input_name);
     }
-    let ref name: String = args[1];
-    let id;
-    if name.len() == 17 && only_nums(&name) {
-        id = name.parse::<u128>().unwrap();
+    let name = &args[1];
+    let id = if name.len() == 17 && only_nums(&name) {
+        name.parse::<u128>().unwrap()
     } else {
         let page: IdResponse = ureq::get(&format!(
             "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={}&vanityurl={}",
@@ -22,8 +21,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .call()
         .into_json_deserialize()?;
 
-        id = page.response.steamid.parse::<u128>().unwrap();
-    }
+        page.response.steamid.parse::<u128>().unwrap()
+    };
 
     let page: GameResponse = ureq::get(&format!("
 		http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={}&steamid={}&include_played_free_games=true&format=json",
@@ -69,14 +68,14 @@ struct Game {
 impl Games {
     fn count_time(&self) -> (f64, f64) {
         (
-            self.games.iter().fold(0., |a, x| &a + x.playtime_forever) / 60.,
+            self.games.iter().fold(0., |a, x| a + x.playtime_forever) / 60.,
             self.games.iter().fold(0., |a, x| match x.playtime_2weeks {
-                Some(x) => &a + x,
+                Some(x) => a + x,
                 None => a,
             }) / 60.,
         )
     }
 }
-fn only_nums(i: &String) -> bool {
+fn only_nums(i: &str) -> bool {
     i.chars().all(char::is_numeric)
 }
