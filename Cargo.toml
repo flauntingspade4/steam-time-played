@@ -5,5 +5,5 @@ authors = ["flauntingspade4 <48335751+flauntingspade4@users.noreply.github.com>"
 edition = "2018"
 
 [dependencies]
-serde = { version = "1.0.117", features = ["derive"] }
-ureq = { version = "~1", features = ["json"] }
+serde = { version = ">=1.0.0", features = ["derive"] }
+ureq = { version = ">=2.0.0", features = ["json"] }
